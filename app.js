@@ -105,6 +105,7 @@ function moveForward(rover) {
 function moveBackward(rover) {
   console.log('moveBackward was called');
   let currentDirection = rover.direction;
+  console.log(currentDirection);
 
   // define the direction to move backwards
 
@@ -206,7 +207,7 @@ function command(arrayRover, arrayOrders, grid) {
     let initialPositionRover = [];
     initialPositionRover.push(arrayRover[i].x, arrayRover[i].y);
 
-    console.log(`Rover${i} initial position: ${initialPositionRover}`);
+    console.log(`Rover${i + 1} initial position: ${initialPositionRover}`);
 
     // generate the grid with the obstacles and set rover
     setRoverGrid(arrayRover[i], grid);
@@ -224,92 +225,100 @@ function command(arrayRover, arrayOrders, grid) {
   // function to check the obstacles and rovers on the grid and move each of them
 
   for (let i = 0; i < numRovers; i++) {
-    console.log(`Moving rover${i}`);
-    if (arrayOrders.length === arrayRover.length) {
-      for (let j = 0; j < arrayOrders.length; j++) {
-        for (let k = 0; k < arrayOrders[j].length; k++) {
-          let order = orders[j][k];
-          let coordinates = [];
+    let startPos = [];
+    let endPos = [];
+    startPos.push(arrayRover[i].x, arrayRover[i].y);
+    console.log(startPos);
 
-          if (order !== 'b' || order !== 'f' || order !== 'r' || order !== 'l') {
-            console.log('Invalid direction! Please review your orders!');
-          } else {
-            switch(order) {
-              case 'l':
-                turnLeft(arrayRover[i]);
-                break;
-              case 'r':
-                turnRight(arrayRover[i]);
-                break;
-              case 'f':
-                coordinates = nextMove(arrayRover[i]);
-                // console.log(coordinates);
-                // console.log(coordinates[1])
-                if (typeof grid[coordinates[1]] === 'undefined' || typeof grid[coordinates[0]] === 'undefined') {
-                  console.log('Not possible, out of range!');          
-                } else if (grid[coordinates[1]][coordinates[0]]) {
-                  moveForward(arrayRover[i]);
-                } else if (grid[coordinates[1]][coordinates[0]] === 'R') {
-                  console.log ('You will crush into another rover');
-                } else {
-                  console.log('Not possible, obstacle!');
-                  // console.log(rover.travelLog);
-                }
-                break;
-              case 'b':
-                coordinates = nextMove(arrayRover[i]);
-                console.log(coordinates);
-                // console.log(coordinates[1])
-                if (typeof grid[coordinates[1]] === 'undefined' || typeof grid[coordinates[0]] === 'undefined') {
-                  console.log('Not possible, out of range!');
-                } else if (grid[coordinates[1]][coordinates[0]]) {
-                  moveBackward(arrayRover[i]);
-                } else if (grid[coordinates[1]][coordinates[0]] === 'R') {
-                  console.log ('You will crush into another rover');
-                } else {
-                  console.log('Not possible, obstacle!');
-                  // console.log(rover.travelLog);
-                }
-                break;
-              default:
-                console.log('Invalid command!');
-                break;
-            }
+    console.log(`Moving rover${i + 1}`);
+    if (arrayOrders.length === arrayRover.length) {
+      for (let j = 0; j < arrayOrders[i].length; j++) {
+        let order = arrayOrders[i][j];
+        console.log(order);
+        let coordinates = [];
+
+        if (order !== 'b' && order !== 'f' && order !== 'r' && order !== 'l') {
+          console.log('Invalid direction! Please review your orders!');
+        } else {
+          switch(order) {
+            case 'l':
+              turnLeft(arrayRover[i]);
+              break;
+            case 'r':
+              turnRight(arrayRover[i]);
+              break;
+            case 'f':
+              coordinates = nextMove(arrayRover[i]);
+              // console.log(coordinates);
+              // console.log(coordinates[1])
+              if (typeof grid[coordinates[1]] === 'undefined' || typeof grid[coordinates[0]] === 'undefined') {
+                console.log('Not possible, out of range!');          
+              } else if (grid[coordinates[1]][coordinates[0]]) {
+                moveForward(arrayRover[i]);
+              } else if (grid[coordinates[1]][coordinates[0]] === 'R') {
+                console.log ('You will crush into another rover');
+              } else {
+                console.log('Not possible, obstacle!');
+                // console.log(rover.travelLog);
+              }
+              break;
+            case 'b':
+              coordinates = nextMove(arrayRover[i]);
+              //console.log(coordinates);
+              // console.log(coordinates[1])
+              if (typeof grid[coordinates[1]] === 'undefined' || typeof grid[coordinates[0]] === 'undefined') {
+                console.log('Not possible, out of range!');
+              } else if (grid[coordinates[1]][coordinates[0]]) {
+                moveBackward(arrayRover[i]);
+              } else if (grid[coordinates[1]][coordinates[0]] === 'R') {
+                console.log ('You will crush into another rover');
+              } else {
+                console.log('Not possible, obstacle!');
+                // console.log(rover.travelLog);
+              }
+              break;
+            default:
+              console.log('Invalid command!');
+              break;
           }
         }
       }
     } else {
       console.log('Review orders\' array: the number of orders and rovers do not match');
     }
+    console.log(`Rover${i + 1}: End of moves!`);
+    console.log(`The rover has made ${arrayRover[i].travelLog.length} moves: `);
+    for (let k = 0; k < arrayRover[i].travelLog.length; k++) {
+      console.log(`Move ${k + 1} ==> x=${arrayRover[i].travelLog[k].x}, y=${arrayRover[i].travelLog[k].y}`);
+    }
+    // reset grid, changing rovers position and deleting initial position
+    endPos.push(arrayRover[i].x, arrayRover[i].y);
+    console.log(endPos);
   }
   // show end of moves
   console.log('Finished moving rovers!')
 
-  console.log(`The rover has made ${arrayRover[i].travelLog.length} moves: `);
-  // for (let i = 0; i < rover.travelLog.length; i++) {
-  // console.log(`Move ${i + 1} ==> x=${rover.travelLog[i].x}, y=${rover.travelLog[i].y}`);
-  // }
-
   // update grid with the new position of rover1 and 2
-  // reset initial position to empty space
+  updateGrid(grid, startPos, endPos);
 
-  resetGrid(grid);
+  // print new version of board
+  console.log(grid.join('\n'));
 
   // update new position
   for (let i = 0; i < numRovers; i++) {
     // generate the grid with the obstacles and set rover
     setRoverGrid(arrayRover[i], grid);
   }
-  // print new version of board
-  console.log(grid.join('\n'));
 }
 
 // function to reset the grid
-function resetGrid(grid) {
+function updateGrid(grid, startPos, endPos) {
   for (let i = 0; i < grid.length; i++) {
     for (let j = 0; j < grid[i].length; j++) {
-      if (grid[i][j] === false) {
+      if (i === startPos[1] && j === startPos[0]) {
         grid[i][j] = true;
+      } else if (i === endPos[1] && j === endPos[0]) {
+        grid[i][j] = 'R';
       }
     }
   }
@@ -390,6 +399,8 @@ function nextMove(rover) {
 // TESTING:
 
 ordersArray = ['rfrflfb', 'lrlfflflb'];
+
+command(marsRover, ordersArray, marsRoverGrid);
 
 // test turnRight
 // turnRight(marsRover);
