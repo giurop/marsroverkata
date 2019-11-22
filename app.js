@@ -12,11 +12,11 @@
 // Rover Object Goes Here
 // ======================
 
-let marsRover = {
+let marsRover = [
   // adding the rover objects inside the object holding them together
   // the direction property can contain one of four values: 'N', 'S', 'E' or 'W'
   // default = 'N'
-  rover1: {
+  {
     direction: 'N',
     // add two properties to your rover called x and y
     // default = 0
@@ -24,13 +24,13 @@ let marsRover = {
     y: 0,
     travelLog: [{ x: 0, y: 0 }],
   },
-  rover2: {
+  {
     direction: 'S',
     x: 1,
     y: 1,
     travelLog: [{ x: 1, y: 1 }],
   },
-};
+];
 
 // ======================
 
@@ -196,9 +196,24 @@ function newPosition(rover) {
 
 // first part of the for just to validate the orders input
 
-function command(rover, orders, grid) {
-  setRoverGrid(rover, grid);
+function command(arrayRover, orders, grid) {
+  let numRovers = arrayRover.length;
+  console.log(numRovers);
+
+  // save rover's initial position
+
+  for (let i = 0; i < numRovers; i++) {
+    let initialPositionRover = [];
+    initialPositionRover.push(arrayRover[i].x, arrayRover[i].y);
+
+    console.log(`Rover${i} initial position: ${initialPositionRover}`);
+
+    // generate the grid with the obstacles and set rover
+    setRoverGrid(arrayRover[i], grid);
+  }
   console.log(grid.join('\n'));
+
+
 
   for (let i = 0; i < orders.length; i++) {
     let order = orders[i];
@@ -228,6 +243,44 @@ function command(rover, orders, grid) {
   // for (let i = 0; i < rover.travelLog.length; i++) {
   // console.log(`Move ${i + 1} ==> x=${rover.travelLog[i].x}, y=${rover.travelLog[i].y}`);
   // }
+}
+
+function checkObstacles(grid, rover1, rover2, orders1, orders2) {
+
+  // read the map where the rover is
+  // see the next command and check the cell where it should go
+  // if cell = ., good to go, if the cell = o or cell = X, not good to go
+  // receive the list of commands and execute one at a time
+
+  // now that we have two simultaneous rovers, check where each of them is and move accordingly
+  // to avoid repeating, separated the functions
+
+  // first rover
+  console.log('Moving rover1');
+  moveRover(grid, rover1, orders1);
+
+  // update grid with new position of rover1
+
+
+  // second rover
+  console.log('Moving rover2');
+  moveRover(grid, rover2, orders2);
+
+  // update grid with the new position of rover2
+  // reset initial position to empty space
+  grid[initialPositionRover1[1]][initialPositionRover1[0]] = '.';
+  grid[initialPositionRover2[1]][initialPositionRover2[0]] = '.';
+
+  // update new position
+  setRoverGrid(rover1, grid);
+  setRoverGrid(rover2, grid);
+
+  // -------- imprimir board
+
+  // show end of moves
+  console.log('Finished moving rovers!')
+
+  // show new set of the grid
 }
 
 // Bonus 4 - Obstacles
@@ -358,61 +411,6 @@ function moveRover(grid, rover, orders) {
   }
 }
 
-function checkObstacles(grid, rover1, rover2, orders1, orders2) {
-
-  // save rovers' initial position
-  let initialPositionRover1 = [];
-  initialPositionRover1.push(rover1.x);
-  initialPositionRover1.push(rover1.y);
-  console.log(`Rover1 initial position: ${initialPositionRover1}`);
-
-  let initialPositionRover2 = [];
-  initialPositionRover2.push(rover2.x);
-  initialPositionRover2.push(rover2.y);
-  console.log(`Rover1 initial position: ${initialPositionRover2}`);
-
-  // generate the grid with the obstacles
-  setRoverGrid(rover1, grid);
-  setRoverGrid(rover2, grid);
-
-  // ------ imprimir aqui
-
-  // read the map where the rover is
-  // see the next command and check the cell where it should go
-  // if cell = ., good to go, if the cell = o or cell = X, not good to go
-  // receive the list of commands and execute one at a time
-
-  // now that we have two simultaneous rovers, check where each of them is and move accordingly
-  // to avoid repeating, separated the functions
-
-  // first rover
-  console.log('Moving rover1');
-  moveRover(grid, rover1, orders1);
-
-  // update grid with new position of rover1
-
-
-  // second rover
-  console.log('Moving rover2');
-  moveRover(grid, rover2, orders2);
-
-  // update grid with the new position of rover2
-  // reset initial position to empty space
-  grid[initialPositionRover1[1]][initialPositionRover1[0]] = '.';
-  grid[initialPositionRover2[1]][initialPositionRover2[0]] = '.';
-
-  // update new position
-  setRoverGrid(rover1, grid);
-  setRoverGrid(rover2, grid);
-
-  // -------- imprimir board
-
-  // show end of moves
-  console.log('Finished moving rovers!')
-
-  // show new set of the grid
-}
-
 // ------------------------------------------------
 
 // TESTING:
@@ -424,10 +422,10 @@ function checkObstacles(grid, rover1, rover2, orders1, orders2) {
 // turnLeft(marsRover);
 
 // test moveForward
-// moveForward(marsRover);
+// moveForward(marsRover.rover1);
 
 // test moveBackward
-// moveBackward(marsRover);
+// moveBackward(marsRover.rover1);
 
 // command function + forward
 // command(marsRover, 'rfrfflflff');
