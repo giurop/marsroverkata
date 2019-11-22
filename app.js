@@ -196,7 +196,7 @@ function newPosition(rover) {
 
 // first part of the for just to validate the orders input
 
-function command(arrayRover, orders, grid) {
+function command(arrayRover, arrayOrders, grid) {
   let numRovers = arrayRover.length;
   console.log(numRovers);
 
@@ -213,74 +213,106 @@ function command(arrayRover, orders, grid) {
   }
   console.log(grid.join('\n'));
 
-
-
-  for (let i = 0; i < orders.length; i++) {
-    let order = orders[i];
-
-    if (order !== 'b' || order !== 'f' || order !== 'r' || order !== 'l') {
-      console.log('Invalid direction! Please review your orders!');
-    } else {
-      switch (order) {
-        case 'f':
-          moveForward(rover);
-          break;
-        case 'b':
-          moveBackward(rover);
-          break;
-        case 'r':
-          turnRight(rover);
-          break;
-        case 'l':
-          turnLeft(rover);
-          break;
-        default:
-          break;
-      }
-    }
-  }
-  console.log(`The rover has made ${rover.travelLog.length} moves: `);
-  // for (let i = 0; i < rover.travelLog.length; i++) {
-  // console.log(`Move ${i + 1} ==> x=${rover.travelLog[i].x}, y=${rover.travelLog[i].y}`);
-  // }
-}
-
-function checkObstacles(grid, rover1, rover2, orders1, orders2) {
-
   // read the map where the rover is
   // see the next command and check the cell where it should go
-  // if cell = ., good to go, if the cell = o or cell = X, not good to go
+  // if cell = true, good to go, if the cell = false or cell = R, not good to go
   // receive the list of commands and execute one at a time
 
   // now that we have two simultaneous rovers, check where each of them is and move accordingly
   // to avoid repeating, separated the functions
 
-  // first rover
-  console.log('Moving rover1');
-  moveRover(grid, rover1, orders1);
+  // function to check the obstacles and rovers on the grid and move each of them
 
-  // update grid with new position of rover1
+  for (let i = 0; i < numRovers; i++) {
+    console.log(`Moving rover${i}`);
+    if (arrayOrders.length === arrayRover.length) {
+      for (let j = 0; j < arrayOrders.length; j++) {
+        for (let k = 0; k < arrayOrders[j].length; k++) {
+          let order = orders[j][k];
+          let coordinates = [];
 
-
-  // second rover
-  console.log('Moving rover2');
-  moveRover(grid, rover2, orders2);
-
-  // update grid with the new position of rover2
-  // reset initial position to empty space
-  grid[initialPositionRover1[1]][initialPositionRover1[0]] = '.';
-  grid[initialPositionRover2[1]][initialPositionRover2[0]] = '.';
-
-  // update new position
-  setRoverGrid(rover1, grid);
-  setRoverGrid(rover2, grid);
-
-  // -------- imprimir board
-
+          if (order !== 'b' || order !== 'f' || order !== 'r' || order !== 'l') {
+            console.log('Invalid direction! Please review your orders!');
+          } else {
+            switch(order) {
+              case 'l':
+                turnLeft(arrayRover[i]);
+                break;
+              case 'r':
+                turnRight(arrayRover[i]);
+                break;
+              case 'f':
+                coordinates = nextMove(arrayRover[i]);
+                // console.log(coordinates);
+                // console.log(coordinates[1])
+                if (typeof grid[coordinates[1]] === 'undefined' || typeof grid[coordinates[0]] === 'undefined') {
+                  console.log('Not possible, out of range!');          
+                } else if (grid[coordinates[1]][coordinates[0]]) {
+                  moveForward(arrayRover[i]);
+                } else if (grid[coordinates[1]][coordinates[0]] === 'R') {
+                  console.log ('You will crush into another rover');
+                } else {
+                  console.log('Not possible, obstacle!');
+                  // console.log(rover.travelLog);
+                }
+                break;
+              case 'b':
+                coordinates = nextMove(arrayRover[i]);
+                console.log(coordinates);
+                // console.log(coordinates[1])
+                if (typeof grid[coordinates[1]] === 'undefined' || typeof grid[coordinates[0]] === 'undefined') {
+                  console.log('Not possible, out of range!');
+                } else if (grid[coordinates[1]][coordinates[0]]) {
+                  moveBackward(arrayRover[i]);
+                } else if (grid[coordinates[1]][coordinates[0]] === 'R') {
+                  console.log ('You will crush into another rover');
+                } else {
+                  console.log('Not possible, obstacle!');
+                  // console.log(rover.travelLog);
+                }
+                break;
+              default:
+                console.log('Invalid command!');
+                break;
+            }
+          }
+        }
+      }
+    } else {
+      console.log('Review orders\' array: the number of orders and rovers do not match');
+    }
+  }
   // show end of moves
   console.log('Finished moving rovers!')
 
-  // show new set of the grid
+  console.log(`The rover has made ${arrayRover[i].travelLog.length} moves: `);
+  // for (let i = 0; i < rover.travelLog.length; i++) {
+  // console.log(`Move ${i + 1} ==> x=${rover.travelLog[i].x}, y=${rover.travelLog[i].y}`);
+  // }
+
+  // update grid with the new position of rover1 and 2
+  // reset initial position to empty space
+
+  resetGrid(grid);
+
+  // update new position
+  for (let i = 0; i < numRovers; i++) {
+    // generate the grid with the obstacles and set rover
+    setRoverGrid(arrayRover[i], grid);
+  }
+  // print new version of board
+  console.log(grid.join('\n'));
+}
+
+// function to reset the grid
+function resetGrid(grid) {
+  for (let i = 0; i < grid.length; i++) {
+    for (let j = 0; j < grid[i].length; j++) {
+      if (grid[i][j] === false) {
+        grid[i][j] = true;
+      }
+    }
+  }
 }
 
 // Bonus 4 - Obstacles
@@ -316,7 +348,6 @@ function setRoverGrid(rover, grid) {
 // setRoverGrid(marsRover, marsRoverGrid);
 
 // function to calculate next move
-// ---------- receber o board na funcao em cima e checar
 
 function nextMove(rover) {
   let currentDirection = rover.direction;
@@ -354,66 +385,11 @@ function nextMove(rover) {
   return (arr);
 }
 
-// function to check the obstacles and rovers on the grid and move each of them
-
-// separate function to move rovers
-
-function moveRover(grid, rover, orders) {
-
-  // --------- validacao de comandos
-  // ---------- reaproveitar funcao anterior
-
-  for (let i = 0; i < orders.length; i++) {
-    let order = orders[i];
-    let coordinates = [];
-
-    switch (order) {
-      case 'l':
-        turnLeft(rover);
-        break;
-      case 'r':
-        turnRight(rover);
-        break;
-      case 'f':
-        coordinates = nextMove(rover);
-        // console.log(coordinates);
-        // console.log(coordinates[1])
-        if (typeof grid[coordinates[1]] === 'undefined' || typeof grid[coordinates[0]] === 'undefined') {
-          console.log('Not possible, out of range!');          
-        } else if (grid[coordinates[1]][coordinates[0]] === '.') {
-          moveForward(rover);
-        } else if (grid[coordinates[1]][coordinates[0]] === 'X') {
-          console.log ('You will crush into another rover');
-        } else {
-          console.log('Not possible, obstacle!');
-          // console.log(rover.travelLog);
-        }
-        break;
-      case 'b':
-        coordinates = nextMove(rover);
-        console.log(coordinates);
-        // console.log(coordinates[1])
-        if (typeof grid[coordinates[1]] === 'undefined' || typeof grid[coordinates[0]] === 'undefined') {
-          console.log('Not possible, out of range!');
-        } else if (grid[coordinates[1]][coordinates[0]] === '.') {
-          moveForward(rover);
-        } else if (grid[coordinates[1]][coordinates[0]] === 'X') {
-          console.log ('You will crush into another rover');
-        } else {
-          console.log('Not possible, obstacle!');
-          // console.log(rover.travelLog);
-        }
-        break;
-      default:
-        console.log('Invalid command!');
-        break;
-    }
-  }
-}
-
 // ------------------------------------------------
 
 // TESTING:
+
+ordersArray = ['rfrflfb', 'lrlfflflb'];
 
 // test turnRight
 // turnRight(marsRover);
